@@ -4,6 +4,7 @@ require "twitter"
 require "mastodon"
 require "byebug"
 require "yaml"
+require "twitter2mastodon/status"
 
 module Twitter2mastodon
   class Cli < Thor
@@ -29,9 +30,11 @@ module Twitter2mastodon
 
       last_twitt = twitter.user_timeline(user).reject(&:retweet?).reject(&:user_mentions?).first
 
+      last_twitt = Twitter2Mastodon::Status.new(last_twitt)
+
       mastodon = Mastodon::REST::Client.new(base_url: configuration["mastodon"]["base_url"], bearer_token: configuration["mastodon"]["bearer_token"])
 
-      mastodon.create_status("#{last_twitt.user.name}\n\n#{last_twitt.full_text}\n\nOriginal tweet:#{last_twitt.url}")
+      mastodon.create_status(last_twitt.status)
     end
 
     Cli.start
