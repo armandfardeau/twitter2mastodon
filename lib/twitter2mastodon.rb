@@ -37,12 +37,10 @@ module Twitter2mastodon
       users.each do |user|
         # get last tweet and stores it
         last_twitt = twitter.user_timeline(user).reject(&:retweet?).reject(&:user_mentions?).first
-        last_twitt = Twitter2Mastodon::Status.new(last_twitt)
-
-        @store.add_to_store(last_twitt)
+        last_twitt = @store.add_to_store(Twitter2Mastodon::Status.new(last_twitt))
 
         # publish status
-        if @store.never_been_published?(last_twitt)
+        if last_twitt
           mastodon.create_status(last_twitt.status)
           message_count += 1
           puts "Succefully published #{last_twitt.message}" if options[:ultraverbose]

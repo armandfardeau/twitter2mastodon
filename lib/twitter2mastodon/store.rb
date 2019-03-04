@@ -17,13 +17,24 @@ module Twitter2Mastodon
     def add_to_store(tweet_object)
       status = tweet_object
       id = make_hash(tweet_object)
-      return unless never_been_published?(tweet_object)
 
-      new_store = @store.merge({ id => { name: status.name, message: status.message, uri: status.url.to_str } })
-      File.write(@store_file, new_store.to_json)
+      return nil unless never_been_published?(tweet_object)
+
+      clean_store
+
+      @store[id] = { name: status.name, message: status.message, uri: status.url.to_str }
+      File.write(@store_file, @store.to_json)
+
+      tweet_object
     end
 
     private
+
+    def clean_store
+      return unless @store.size > 100
+
+      @store.shift
+    end
 
     def find_or_create_store
       file = File.join(Etc.getpwuid.dir, ".twitter2mastodon.json")
