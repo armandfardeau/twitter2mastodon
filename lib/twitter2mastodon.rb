@@ -11,11 +11,14 @@ module Twitter2mastodon
     class_option :verbose, type: :boolean, aliases: "-v"
     class_option :configfile, type: :string, aliases: "-c"
 
-    desc "get_last_tweet [USER]", "Get last tweet from a user a toots it!"
+    desc "get_last_tweet", "Get last tweet from a user a toots it!"
+    method_option :user, type: :string, aliases: "-u"
 
-    def get_last_tweet(user)
+    def get_last_tweet
       return unless options[:configfile]
 
+      user = options[:user
+      ]
       # Configure different client
       configuration = Twitter2Mastodon::Configuration.new(options[:configfile])
       twitter = configuration.twitter_client
