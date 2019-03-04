@@ -33,4 +33,9 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency "rubocop", "~> 0.65.0"
   spec.add_development_dependency "simplecov", "~> 0.16.1"
+  spec.add_development_dependency "byebug"
+  spec.add_runtime_dependency "thor", "~> 0.20.3"
+  spec.add_runtime_dependency "twitter"
+  spec.add_runtime_dependency "mastodon-api"
+  spec.add_runtime_dependency "mastodon"
 end
