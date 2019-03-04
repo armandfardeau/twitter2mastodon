@@ -8,6 +8,7 @@ require "twitter2mastodon/store"
 
 module Twitter2mastodon
   class Cli < Thor
+    class_option :ultraverbose, type: :boolean, aliases: "-V"
     class_option :verbose, type: :boolean, aliases: "-v"
     class_option :configfile, type: :string, aliases: "-c"
 
@@ -15,12 +16,17 @@ module Twitter2mastodon
     method_option :user, type: :string, aliases: "-u"
 
     def get_last_tweet
+      message_count = 0
       return unless options[:configfile]
 
       # Configure different client
       configuration = Twitter2Mastodon::Configuration.new(options[:configfile])
+
+      puts configuration.inspect if options[:ultraverbose]
+
       twitter = configuration.twitter_client
       mastodon = configuration.mastodon_client
+      @store = Twitter2Mastodon::Store.new
 
       users = if options[:user]
                 [options[:user]]
@@ -32,12 +38,26 @@ module Twitter2mastodon
         # get last tweet and stores it
         last_twitt = twitter.user_timeline(user).reject(&:retweet?).reject(&:user_mentions?).first
         last_twitt = Twitter2Mastodon::Status.new(last_twitt)
-        last_tweet = Twitter2Mastodon::Store.new(last_twitt)
 
-        puts last_tweet.store if options[:verbose]
+        @store.add_to_store(last_twitt)
 
         # publish status
-        mastodon.create_status(last_twitt.status) if last_tweet.never_been_published?
+        if @store.never_been_published?(last_twitt)
+          mastodon.create_status(last_twitt.status)
+          message_count += 1
+          puts "Succefully published #{last_twitt.message}" if options[:ultraverbose]
+        else
+          puts "No new status has been published" if options[:ultraverbose]
+        end
+      end
+
+      puts @store.store if options[:ultraverbose]
+      return unless options[:verbose]
+
+      if message_count
+        puts "Succefully published #{message_count} status"
+      else
+        puts "No status published as expected"
       end
     end
 
