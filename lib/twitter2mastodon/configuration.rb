@@ -3,14 +3,14 @@ require "mastodon"
 
 module Twitter2Mastodon
   class Configuration
-    attr_reader :mastodon, :twitter
+    attr_reader :mastodon, :twitter, :users
 
     def initialize(config_file)
       file = File.expand_path(config_file)
       raise ArgumentError, "No file provided" unless File.exist?(file)
 
       configuration = YAML.load_file(file)
-
+      @users = configuration["users"].map { |user| user.downcase }
       @twitter = configuration["twitter"]
       @mastodon = configuration["mastodon"]
     end

@@ -17,22 +17,28 @@ module Twitter2mastodon
     def get_last_tweet
       return unless options[:configfile]
 
-      user = options[:user
-      ]
       # Configure different client
       configuration = Twitter2Mastodon::Configuration.new(options[:configfile])
       twitter = configuration.twitter_client
       mastodon = configuration.mastodon_client
 
-      # get last tweet and stores it
-      last_twitt = twitter.user_timeline(user).reject(&:retweet?).reject(&:user_mentions?).first
-      last_twitt = Twitter2Mastodon::Status.new(last_twitt)
-      last_tweet = Twitter2Mastodon::Store.new(last_twitt)
+      users = if options[:user]
+                [options[:user]]
+              else
+                configuration.users
+              end
 
-      puts last_tweet.store if options[:verbose]
+      users.each do |user|
+        # get last tweet and stores it
+        last_twitt = twitter.user_timeline(user).reject(&:retweet?).reject(&:user_mentions?).first
+        last_twitt = Twitter2Mastodon::Status.new(last_twitt)
+        last_tweet = Twitter2Mastodon::Store.new(last_twitt)
 
-      # publish status
-      mastodon.create_status(last_twitt.status) if last_tweet.never_been_published?
+        puts last_tweet.store if options[:verbose]
+
+        # publish status
+        mastodon.create_status(last_twitt.status) if last_tweet.never_been_published?
+      end
     end
 
     Cli.start
