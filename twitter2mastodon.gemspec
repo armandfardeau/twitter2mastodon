@@ -4,7 +4,7 @@ require "twitter2mastodon/version"
 
 Gem::Specification.new do |spec|
   spec.name = "twitter2mastodon"
-  spec.version = Twitter2mastodon::VERSION
+  spec.version = Twitter2Mastodon::VERSION
   spec.authors = ["Armand Fardeau"]
   spec.email = ["fardeauarmand@gmail.com"]
 
