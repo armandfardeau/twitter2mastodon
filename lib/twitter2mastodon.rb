@@ -26,6 +26,8 @@ module Twitter2mastodon
       last_twitt = Twitter2Mastodon::Status.new(last_twitt)
       last_tweet = Twitter2Mastodon::Store.new(last_twitt)
 
+      puts last_tweet.store if options[:verbose]
+
       # publish status
       mastodon.create_status(last_twitt.status) if last_tweet.never_been_published?
     end

@@ -3,15 +3,18 @@ require "yaml"
 
 module Twitter2Mastodon
   class Store
+    attr_reader :store
+
     def initialize(status)
       @status = status
       @id = Digest::MD5.hexdigest @status.message + @status.id.to_s
-      @store = find_or_create_store
+      @store_file = find_or_create_store
+      @store = JSON.parse(File.read(@store_file))
       store_tweet
     end
 
     def never_been_published?
-      store_content.none? { |tweet| tweet[0] == @id }
+      @store.none? { |tweet| tweet[0] == @id }
     end
 
     private
@@ -21,18 +24,14 @@ module Twitter2Mastodon
       return file if File.exist?(file)
 
       FileUtils.touch file
-      File.write(file, {}.to_s)
+      File.write(file, "{}")
     end
 
     def store_tweet
-      return if never_been_published?
+      return unless never_been_published?
 
-      new_store = store_content.merge({ @id => { name: @status.name, message: @status.message, uri: @status.url.to_str } })
-      File.write(@store, new_store.to_json)
-    end
-
-    def store_content
-      JSON.parse(File.read(@store))
+      new_store = @store.merge({ @id => { name: @status.name, message: @status.message, uri: @status.url.to_str } })
+      File.write(@store_file, new_store.to_json)
     end
   end
 end
